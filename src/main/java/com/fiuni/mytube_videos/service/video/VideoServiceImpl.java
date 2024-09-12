@@ -1,5 +1,7 @@
 package com.fiuni.mytube_videos.service.video;
 
+import com.fiuni.mytube.domain.channel.ChannelDomain;
+import com.fiuni.mytube.domain.user.UserDomain;
 import com.fiuni.mytube.domain.video.VideoDomain;
 import com.fiuni.mytube.domain.video.VideoVisibility;
 import com.fiuni.mytube.dto.video.VideoDTO;
@@ -36,7 +38,7 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
         dto.setUploadDate(domain.getUploadDate());
         dto.setVisibility(domain.getVisibility().name());
         dto.setDuration(domain.getDuration());
-        // Omitiendo el campo deleted
+        // Omitir deleted
         return dto;
     }
 
@@ -46,6 +48,10 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
         domain.setId(dto.get_id());
 
         // TODO: Asignar el UserDomain y ChannelDomain cuando los servicios estén disponibles
+        UserDomain user = new UserDomain();
+        user.setId(1);
+        ChannelDomain channel = new ChannelDomain();
+        channel.setId(1);
         // domain.setUser(user);
         // domain.setChannel(channel);
 
@@ -58,7 +64,7 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
         domain.setUploadDate(dto.getUploadDate());
         domain.setVisibility(VideoVisibility.valueOf(dto.getVisibility()));
         domain.setDuration(dto.getDuration());
-        domain.setDeleted(false); // Asignar por defecto false o según tu lógica
+        domain.setDeleted(false); // Asignar por defecto false
         return domain;
     }
 
