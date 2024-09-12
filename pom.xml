@@ -96,7 +96,7 @@
 
         <!-- MyTube Beans: Dependencia interna de tu proyecto con clases reutilizables -->
         <dependency>
-            <groupId>com.mytube</groupId>
+            <groupId>com.fiuni</groupId>
             <artifactId>mytube</artifactId>
             <version>1.0</version>
             <scope>system</scope>

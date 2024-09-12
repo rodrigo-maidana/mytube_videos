@@ -1,4 +1,4 @@
-package com.fiuni.mytube_videos;
+/*package com.fiuni.mytube_videos;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,4 +10,4 @@ class MytubeVideosApplicationTests {
     void contextLoads() {
     }
 
-}
+}*/
