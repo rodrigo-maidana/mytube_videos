@@ -2,8 +2,10 @@ package com.fiuni.mytube_videos.controller.viewinghistory;
 
 import com.fiuni.mytube.dto.viewinghistory.ViewingHistoryDTO;
 import com.fiuni.mytube.dto.viewinghistory.ViewingHistoryResult;
+import com.fiuni.mytube_videos.exception.ResourceNotFoundException;
 import com.fiuni.mytube_videos.service.viewinghistory.IViewingHistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +33,7 @@ public class ViewingHistoryController {
         return new ResponseEntity<>(history, HttpStatus.OK);
     }
 
-    // Obtener todo el historial de visualizaciones
+    // Obtener historial de visualizaciones
     @GetMapping
     public ResponseEntity<List<ViewingHistoryDTO>> getAllViewingHistory() {
         ViewingHistoryResult result = viewingHistoryService.getAll();
@@ -43,7 +45,7 @@ public class ViewingHistoryController {
     public ResponseEntity<ViewingHistoryDTO> updateViewingHistory(@PathVariable Integer id, @RequestBody ViewingHistoryDTO viewingHistoryDTO) {
         ViewingHistoryDTO existingHistory = viewingHistoryService.getById(id);
         if (existingHistory == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            throw new ResourceNotFoundException("Historial con id " + id + " no encontrado");
         }
         viewingHistoryDTO.set_id(id);
         ViewingHistoryDTO updatedHistory = viewingHistoryService.save(viewingHistoryDTO);
@@ -55,16 +57,17 @@ public class ViewingHistoryController {
     public ResponseEntity<Void> deleteViewingHistory(@PathVariable Integer id) {
         ViewingHistoryDTO existingHistory = viewingHistoryService.getById(id);
         if (existingHistory == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            throw new ResourceNotFoundException("Historial con id " + id + " no encontrado");
         }
         viewingHistoryService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    // Obtener el historial de visualización de un usuario
+    // Obtener el historial de visualización de un usuario con paginación
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<ViewingHistoryDTO>> getViewingHistoryByUser(@PathVariable Integer userId) {
-        ViewingHistoryResult result = viewingHistoryService.getByUser(userId);
+    public ResponseEntity<List<ViewingHistoryDTO>> getViewingHistoryByUser(@PathVariable Integer userId, Pageable pageable) {
+        ViewingHistoryResult result = viewingHistoryService.getByUser(pageable, userId);
         return new ResponseEntity<>(result.getViewingHistories(), HttpStatus.OK);
     }
+
 }

@@ -6,8 +6,11 @@ import com.fiuni.mytube.dto.viewinghistory.ViewingHistoryResult;
 import com.fiuni.mytube_videos.dao.user.IUserDao;
 import com.fiuni.mytube_videos.dao.video.IVideoDao;
 import com.fiuni.mytube_videos.dao.viewinghistory.IViewingHistoryDao;
+import com.fiuni.mytube_videos.exception.ResourceNotFoundException;
 import com.fiuni.mytube_videos.service.base.BaseServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -39,9 +42,9 @@ public class ViewingHistoryServiceImpl extends BaseServiceImpl<ViewingHistoryDTO
     protected ViewingHistoryDomain convertDtoToDomain(ViewingHistoryDTO dto) {
         ViewingHistoryDomain domain = new ViewingHistoryDomain();
         domain.setId(dto.get_id());
-        // TODO: Asignar UserDomain y VideoDomain cuando los servicios estén disponibles
-        domain.setUser(userDao.findById(dto.getUserId()).orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.getUserId())));
-        domain.setVideo(videoDao.findByIdAndDeletedFalse(dto.getVideoId()).orElseThrow(() -> new RuntimeException("Video not found with ID: " + dto.getVideoId())));
+        // Asignar UserDomain y VideoDomain
+        domain.setUser(userDao.findById(dto.getUserId()).orElseThrow(() -> new ResourceNotFoundException("Usuario con id " + dto.getUserId() + " no encontrado")));
+        domain.setVideo(videoDao.findByIdAndDeletedFalse(dto.getVideoId()).orElseThrow(() -> new ResourceNotFoundException("Video con id " + dto.getVideoId() + " no encontrado")));
         domain.setViewDate(new Date());
         return domain;
     }
@@ -56,7 +59,7 @@ public class ViewingHistoryServiceImpl extends BaseServiceImpl<ViewingHistoryDTO
     @Override
     public ViewingHistoryDTO getById(Integer id) {
         ViewingHistoryDomain domain = viewingHistoryDao.findById(id)
-                .orElseThrow(() -> new RuntimeException("Viewing history not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Historial de visualización con id " + id + " no encontrado"));
         return convertDomainToDto(domain);
     }
 
@@ -71,15 +74,27 @@ public class ViewingHistoryServiceImpl extends BaseServiceImpl<ViewingHistoryDTO
     @Override
     public void delete(Integer id) {
         ViewingHistoryDomain domain = viewingHistoryDao.findById(id)
-                .orElseThrow(() -> new RuntimeException("Viewing history not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Historial de visualización con id " + id + " no encontrado"));
         viewingHistoryDao.delete(domain);
     }
 
     @Override
-    public ViewingHistoryResult getByUser(Integer userId) {
-        List<ViewingHistoryDomain> domains = viewingHistoryDao.findByUserId(userId);
+    public ViewingHistoryResult getByUser(Pageable pageable, Integer userId) {
+        Page<ViewingHistoryDomain> pageResult = viewingHistoryDao.findByUserId(pageable, userId);
+        List<ViewingHistoryDomain> domains = pageResult.getContent();
         ViewingHistoryResult result = new ViewingHistoryResult();
         result.setViewingHistories(convertDomainListToDtoList(domains));
         return result;
+    }
+
+
+    @Override
+    public ViewingHistoryResult getAll(Pageable pageable) {
+        return null;
+    }
+
+    @Override
+    public ViewingHistoryResult getByUser(Integer userId) {
+        return null;
     }
 }

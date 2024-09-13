@@ -7,13 +7,13 @@ import com.fiuni.mytube.dto.video.VideoResult;
 import com.fiuni.mytube_videos.dao.channel.IChannelDao;
 import com.fiuni.mytube_videos.dao.user.IUserDao;
 import com.fiuni.mytube_videos.dao.video.IVideoDao;
+import com.fiuni.mytube_videos.exception.ResourceNotFoundException;
 import com.fiuni.mytube_videos.service.base.BaseServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.cache.CacheProperties;
-import org.springframework.cache.annotation.*;
-import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -97,21 +97,22 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
     //@Cacheable(value = "mytube_videos", key = "'video_' + #id")
     public VideoDTO getById(Integer id) {
         VideoDomain domain = videoDao.findByIdAndDeletedFalse(id)
-                .orElseThrow(
-                        () -> new RuntimeException("Video not found with ID: " + id)); // Maneja cuando no se encuentra el video
+                .orElseThrow(() -> new ResourceNotFoundException("Video con id " + id + " no encontrado"));
         return convertDomainToDto(domain); // Convierte y retorna el Domain a DTO
     }
 
-    // Obtener todos los videos
     @Override
     public VideoResult getAll() {
-        List<VideoDomain> domains = videoDao.findAllByDeletedFalse(); // Obtiene todos los videos que no estén eliminados
+        return null;
+    }
+
+    // Obtener todos los videos con paginación
+    @Override
+    public VideoResult getAll(Pageable pageable) {
+        Page<VideoDomain> page = videoDao.findAllByDeletedFalse(pageable); // Usa paginación
         VideoResult result = new VideoResult();
-        List<VideoDTO> videoList = convertDomainListToDtoList(domains); // Convierte la lista de Domain a DTO
-        //for( VideoDTO video:videoList){
-        //    cacheManager.getCache("mytube_videos").put("video_" + video.get_id(), video);
-        //}
-        result.setVideos(videoList); // Convierte la lista de Domain a DTO y la asigna al resultado
+        List<VideoDTO> videoList = convertDomainListToDtoList(page.getContent()); // Convierte la lista de Domain a DTO
+        result.setVideos(videoList);
         return result;
     }
 
@@ -119,8 +120,7 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
     //@CacheEvict(value = "mytube_videos", key = "'video_' + #id")
     public void delete(Integer id) {
         VideoDomain domain = videoDao.findByIdAndDeletedFalse(id)
-                .orElseThrow(
-                        () -> new RuntimeException("Video not found with ID: " + id)); // Maneja cuando no se encuentra el video
+                .orElseThrow(() -> new ResourceNotFoundException("Video con id " + id + " no encontrado"));
         domain.setDeleted(true); // Asigna true al campo deleted
         videoDao.save(domain); // Guarda el Domain en la base de datos
     }
