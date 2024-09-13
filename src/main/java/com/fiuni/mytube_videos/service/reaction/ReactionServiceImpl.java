@@ -63,4 +63,9 @@ public class ReactionServiceImpl extends BaseServiceImpl<ReactionDTO, ReactionDo
         result.setReactions(convertDomainListToDtoList(domains));
         return result;
     }
+
+    @Override
+    public void delete(Integer id) {
+
+    }
 }

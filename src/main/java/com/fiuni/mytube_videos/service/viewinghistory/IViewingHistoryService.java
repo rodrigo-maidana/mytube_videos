@@ -5,5 +5,6 @@ import com.fiuni.mytube.dto.viewinghistory.ViewingHistoryResult;
 import com.fiuni.mytube_videos.service.base.IBaseService;
 
 public interface IViewingHistoryService extends IBaseService<ViewingHistoryDTO, ViewingHistoryResult> {
+    ViewingHistoryResult getByUser(Integer userId);
     // Métodos adicionales si es necesario
 }

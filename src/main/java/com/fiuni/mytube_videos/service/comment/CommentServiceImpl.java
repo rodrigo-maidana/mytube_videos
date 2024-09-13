@@ -67,4 +67,9 @@ public class CommentServiceImpl extends BaseServiceImpl<CommentDTO, CommentDomai
         result.setComments(convertDomainListToDtoList(domains));
         return result;
     }
+
+    @Override
+    public void delete(Integer id) {
+
+    }
 }

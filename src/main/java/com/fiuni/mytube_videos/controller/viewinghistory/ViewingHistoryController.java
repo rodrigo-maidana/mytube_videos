@@ -17,23 +17,23 @@ public class ViewingHistoryController {
     @Autowired
     private IViewingHistoryService viewingHistoryService;
 
-    // Crear un nuevo registro de historial de visualización
+    // Guardar un nuevo historial de visualización
     @PostMapping
     public ResponseEntity<ViewingHistoryDTO> createViewingHistory(@RequestBody ViewingHistoryDTO viewingHistoryDTO) {
-        ViewingHistoryDTO savedViewingHistory = viewingHistoryService.save(viewingHistoryDTO);
-        return new ResponseEntity<>(savedViewingHistory, HttpStatus.CREATED);
+        ViewingHistoryDTO savedHistory = viewingHistoryService.save(viewingHistoryDTO);
+        return new ResponseEntity<>(savedHistory, HttpStatus.CREATED);
     }
 
     // Obtener un historial de visualización por ID
     @GetMapping("/{id}")
     public ResponseEntity<ViewingHistoryDTO> getViewingHistoryById(@PathVariable Integer id) {
-        ViewingHistoryDTO viewingHistory = viewingHistoryService.getById(id);
-        return new ResponseEntity<>(viewingHistory, HttpStatus.OK);
+        ViewingHistoryDTO history = viewingHistoryService.getById(id);
+        return new ResponseEntity<>(history, HttpStatus.OK);
     }
 
-    // Obtener todos los historiales de visualización
+    // Obtener todo el historial de visualizaciones
     @GetMapping
-    public ResponseEntity<List<ViewingHistoryDTO>> getAllViewingHistories() {
+    public ResponseEntity<List<ViewingHistoryDTO>> getAllViewingHistory() {
         ViewingHistoryResult result = viewingHistoryService.getAll();
         return new ResponseEntity<>(result.getViewingHistories(), HttpStatus.OK);
     }
@@ -41,23 +41,30 @@ public class ViewingHistoryController {
     // Actualizar un historial de visualización
     @PutMapping("/{id}")
     public ResponseEntity<ViewingHistoryDTO> updateViewingHistory(@PathVariable Integer id, @RequestBody ViewingHistoryDTO viewingHistoryDTO) {
-        ViewingHistoryDTO existingViewingHistory = viewingHistoryService.getById(id);
-        if (existingViewingHistory == null) {
+        ViewingHistoryDTO existingHistory = viewingHistoryService.getById(id);
+        if (existingHistory == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         viewingHistoryDTO.set_id(id);
-        ViewingHistoryDTO updatedViewingHistory = viewingHistoryService.save(viewingHistoryDTO);
-        return new ResponseEntity<>(updatedViewingHistory, HttpStatus.OK);
+        ViewingHistoryDTO updatedHistory = viewingHistoryService.save(viewingHistoryDTO);
+        return new ResponseEntity<>(updatedHistory, HttpStatus.OK);
     }
 
     // Eliminar un historial de visualización
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteViewingHistory(@PathVariable Integer id) {
-        ViewingHistoryDTO existingViewingHistory = viewingHistoryService.getById(id);
-        if (existingViewingHistory == null) {
+        ViewingHistoryDTO existingHistory = viewingHistoryService.getById(id);
+        if (existingHistory == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        // Implementa la eliminación si es necesario (puede ser lógica o física)
+        viewingHistoryService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    // Obtener el historial de visualización de un usuario
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<ViewingHistoryDTO>> getViewingHistoryByUser(@PathVariable Integer userId) {
+        ViewingHistoryResult result = viewingHistoryService.getByUser(userId);
+        return new ResponseEntity<>(result.getViewingHistories(), HttpStatus.OK);
     }
 }

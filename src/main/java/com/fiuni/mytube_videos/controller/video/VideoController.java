@@ -57,8 +57,7 @@ public class VideoController {
         if (existingVideo == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        // Aquí puedes implementar la lógica de eliminación lógica si lo prefieres
-        videoService.save(existingVideo);
+        videoService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
