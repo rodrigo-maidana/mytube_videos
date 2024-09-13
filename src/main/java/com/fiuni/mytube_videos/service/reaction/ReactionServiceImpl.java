@@ -2,6 +2,7 @@ package com.fiuni.mytube_videos.service.reaction;
 
 import com.fiuni.mytube.domain.reaction.ReactionDomain;
 import com.fiuni.mytube.domain.reaction.ReactionType;
+import com.fiuni.mytube.domain.video.VideoDomain;
 import com.fiuni.mytube.dto.reaction.ReactionDTO;
 import com.fiuni.mytube.dto.reaction.ReactionResult;
 import com.fiuni.mytube_videos.dao.reaction.IReactionDao;
@@ -87,7 +88,12 @@ public class ReactionServiceImpl extends BaseServiceImpl<ReactionDTO, ReactionDo
 
     @Override
     public ReactionSummaryDTO getSummaryByVideoId(Integer videoId) {
-        Map<String, Long> result = reactionDao.getReactionSummaryByVideoId(videoId);
+        // Verificar si el video existe
+        VideoDomain video = videoDao.findById(videoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Video con id " + videoId + " no encontrado"));
+
+        // Obtener el resumen de reacciones por video
+        Map<String, Long> result = reactionDao.getReactionSummaryByVideoId(video.getId());
 
         ReactionSummaryDTO summary = new ReactionSummaryDTO();
         log.debug("Reactions summary: {}", result);
