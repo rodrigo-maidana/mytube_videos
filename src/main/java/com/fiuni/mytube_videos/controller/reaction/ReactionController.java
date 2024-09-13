@@ -2,8 +2,11 @@ package com.fiuni.mytube_videos.controller.reaction;
 
 import com.fiuni.mytube.dto.reaction.ReactionDTO;
 import com.fiuni.mytube.dto.reaction.ReactionResult;
+import com.fiuni.mytube_videos.dto.reaction.ReactionSummaryDTO;
+import com.fiuni.mytube_videos.dto.reaction.ReactionSummaryResult;
 import com.fiuni.mytube_videos.service.reaction.IReactionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,44 +23,35 @@ public class ReactionController {
     // Crear una nueva reacción
     @PostMapping
     public ResponseEntity<ReactionDTO> createReaction(@RequestBody ReactionDTO reactionDTO) {
-        ReactionDTO savedReaction = reactionService.save(reactionDTO);
-        return new ResponseEntity<>(savedReaction, HttpStatus.CREATED);
+        ReactionDTO createdReaction = reactionService.save(reactionDTO);
+        return new ResponseEntity<>(createdReaction, HttpStatus.CREATED);
     }
 
     // Obtener una reacción por ID
     @GetMapping("/{id}")
     public ResponseEntity<ReactionDTO> getReactionById(@PathVariable Integer id) {
-        ReactionDTO reaction = reactionService.getById(id);
-        return new ResponseEntity<>(reaction, HttpStatus.OK);
+        ReactionDTO reactionDTO = reactionService.getById(id);
+        return new ResponseEntity<>(reactionDTO, HttpStatus.OK);
     }
 
-    // Obtener todas las reacciones
+    // Obtener todas las reacciones con paginación
     @GetMapping
-    public ResponseEntity<List<ReactionDTO>> getAllReactions() {
-        ReactionResult result = reactionService.getAll();
+    public ResponseEntity<List<ReactionDTO>> getAllReactions(Pageable pageable) {
+        ReactionResult result = reactionService.getAll(pageable);
         return new ResponseEntity<>(result.getReactions(), HttpStatus.OK);
     }
 
-    // Actualizar una reacción
-    @PutMapping("/{id}")
-    public ResponseEntity<ReactionDTO> updateReaction(@PathVariable Integer id, @RequestBody ReactionDTO reactionDTO) {
-        ReactionDTO existingReaction = reactionService.getById(id);
-        if (existingReaction == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        reactionDTO.set_id(id);
-        ReactionDTO updatedReaction = reactionService.save(reactionDTO);
-        return new ResponseEntity<>(updatedReaction, HttpStatus.OK);
+    // Obtener reacciones por video con paginación
+    @GetMapping("/video/{videoId}")
+    public ResponseEntity<ReactionSummaryDTO> getReactionsByVideo(@PathVariable Integer videoId) {
+        ReactionSummaryDTO dto = reactionService.getSummaryByVideoId(videoId);
+        return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
-    // Eliminar una reacción
+    // Eliminar una reacción por ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReaction(@PathVariable Integer id) {
-        ReactionDTO existingReaction = reactionService.getById(id);
-        if (existingReaction == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        // Implementa la eliminación si es necesario (puedes hacerlo lógica o física)
+        reactionService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

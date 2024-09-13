@@ -5,17 +5,33 @@ import com.fiuni.mytube.domain.reaction.ReactionType;
 import com.fiuni.mytube.dto.reaction.ReactionDTO;
 import com.fiuni.mytube.dto.reaction.ReactionResult;
 import com.fiuni.mytube_videos.dao.reaction.IReactionDao;
+import com.fiuni.mytube_videos.dao.user.IUserDao;
+import com.fiuni.mytube_videos.dao.video.IVideoDao;
+import com.fiuni.mytube_videos.dto.reaction.ReactionSummaryDTO;
+import com.fiuni.mytube_videos.exception.ResourceNotFoundException;
 import com.fiuni.mytube_videos.service.base.BaseServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Service
 public class ReactionServiceImpl extends BaseServiceImpl<ReactionDTO, ReactionDomain, ReactionResult> implements IReactionService {
 
     @Autowired
     private IReactionDao reactionDao;
+
+    @Autowired
+    private IUserDao userDao;
+
+    @Autowired
+    private IVideoDao videoDao;
 
     @Override
     protected ReactionDTO convertDomainToDto(ReactionDomain domain) {
@@ -34,11 +50,15 @@ public class ReactionServiceImpl extends BaseServiceImpl<ReactionDTO, ReactionDo
         domain.setId(dto.get_id());
 
         // TODO: Asignar UserDomain y VideoDomain cuando los servicios estén disponibles
+        domain.setUser(userDao.findById(dto.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario con id " + dto.getUserId() + " no encontrado")));
+        domain.setVideo(videoDao.findById(dto.getVideoId())
+                .orElseThrow(() -> new ResourceNotFoundException("Video con id " + dto.getVideoId() + " no encontrado")));
         // domain.setUser(user);
         // domain.setVideo(video);
 
         domain.setReactionType(ReactionType.valueOf(dto.getReactionType()));
-        domain.setReactionDate(dto.getReactionDate());
+        domain.setReactionDate(new Date());
         return domain;
     }
 
@@ -52,20 +72,45 @@ public class ReactionServiceImpl extends BaseServiceImpl<ReactionDTO, ReactionDo
     @Override
     public ReactionDTO getById(Integer id) {
         ReactionDomain domain = reactionDao.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reaction not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Reacción con id " + id + " no encontrado"));
         return convertDomainToDto(domain);
     }
 
     @Override
-    public ReactionResult getAll() {
-        List<ReactionDomain> domains = reactionDao.findAll();
+    public ReactionResult getAll(Pageable pageable) {
+        Page<ReactionDomain> pageResult = reactionDao.findAll(pageable);
+        List<ReactionDomain> domains = pageResult.getContent();
         ReactionResult result = new ReactionResult();
         result.setReactions(convertDomainListToDtoList(domains));
         return result;
     }
 
     @Override
-    public void delete(Integer id) {
+    public ReactionSummaryDTO getSummaryByVideoId(Integer videoId) {
+        Map<String, Long> result = reactionDao.getReactionSummaryByVideoId(videoId);
 
+        ReactionSummaryDTO summary = new ReactionSummaryDTO();
+        log.debug("Reactions summary: {}", result);
+        summary.setLikes(result.getOrDefault("likes", 0L).intValue());
+        log.debug("Likes: {}", summary.getLikes());
+        summary.setDislikes(result.getOrDefault("dislikes", 0L).intValue());
+        log.debug("Dislikes: {}", summary.getDislikes());
+
+        return summary;
     }
+
+
+
+    @Override
+    public ReactionResult getAll() {
+        return null;
+    }
+
+    @Override
+    public void delete(Integer id) {
+        ReactionDomain domain = reactionDao.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reacción con id " + id + " no encontrado"));
+        reactionDao.delete(domain);
+    }
+
 }

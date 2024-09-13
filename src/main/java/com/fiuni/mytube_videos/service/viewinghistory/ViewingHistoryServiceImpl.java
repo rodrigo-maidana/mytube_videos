@@ -92,9 +92,4 @@ public class ViewingHistoryServiceImpl extends BaseServiceImpl<ViewingHistoryDTO
     public ViewingHistoryResult getAll(Pageable pageable) {
         return null;
     }
-
-    @Override
-    public ViewingHistoryResult getByUser(Integer userId) {
-        return null;
-    }
 }
