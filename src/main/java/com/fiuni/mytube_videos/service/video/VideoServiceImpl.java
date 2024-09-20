@@ -58,12 +58,26 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
 
     @Override
     protected VideoDomain convertDtoToDomain(VideoDTO dto) {
-        VideoDomain domain = videoDao.findById(dto.get_id())
-                .orElseThrow(() -> new ResourceNotFoundException("Video con id " + dto.get_id() + " no encontrado"));
+        if(dto.get_id() == null) {
+            return convertDtoToDomainWithoutId(dto);
+        }
+        VideoDomain domain = videoDao.findById(dto.get_id()).orElse(null);
 
-        // Verificar que no se cambien las relaciones de usuario y canal
-        if (!dto.getUserId().equals(domain.getUser().getId()) || !dto.getChannelId().equals(domain.getChannel().getId())) {
-            throw new BadRequestException("No está permitido modificar el usuario o el canal del video.");
+        if(domain == null) {
+            domain = new VideoDomain();
+            domain.setUser(userDao.findById(dto.getUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Usuario con id " + dto.getUserId() + " no encontrado")));
+            domain.setChannel(channelDao.findById(dto.getChannelId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Canal con id " + dto.getChannelId() + " no encontrado")));
+
+        }else {
+            if(!domain.getUser().getId().equals(dto.getUserId())) {
+                throw new BadRequestException("No puedes cambiar el usuario de un video");
+            }
+
+            if(!domain.getChannel().getId().equals(dto.getChannelId())) {
+                throw new BadRequestException("No puedes cambiar el canal de un video");
+            }
         }
 
         domain.setTitle(dto.getTitle());
