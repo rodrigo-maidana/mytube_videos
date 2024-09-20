@@ -22,4 +22,11 @@ public class GlobalExceptionHandler {
         ErrorResponse errorDetails = new ErrorResponse(ex.getMessage(), request.getDescription(false));
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
+
+    // Manejar BadRequestException
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException ex, WebRequest request) {
+        ErrorResponse errorDetails = new ErrorResponse(ex.getMessage(), request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+    }
 }

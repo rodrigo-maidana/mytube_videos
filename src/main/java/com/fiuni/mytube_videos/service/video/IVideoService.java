@@ -8,4 +8,6 @@ import org.springframework.data.domain.Pageable;
 public interface IVideoService extends IBaseService<VideoDTO, VideoResult> {
     // Obtener todos los videos con paginación
     VideoResult getAll(Pageable pageable);
+
+    void checkVideoExists(Integer id);
 }

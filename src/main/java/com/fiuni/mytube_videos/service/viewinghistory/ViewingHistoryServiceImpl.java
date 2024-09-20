@@ -43,8 +43,12 @@ public class ViewingHistoryServiceImpl extends BaseServiceImpl<ViewingHistoryDTO
         ViewingHistoryDomain domain = new ViewingHistoryDomain();
         domain.setId(dto.get_id());
         // Asignar UserDomain y VideoDomain
-        domain.setUser(userDao.findById(dto.getUserId()).orElseThrow(() -> new ResourceNotFoundException("Usuario con id " + dto.getUserId() + " no encontrado")));
-        domain.setVideo(videoDao.findByIdAndDeletedFalse(dto.getVideoId()).orElseThrow(() -> new ResourceNotFoundException("Video con id " + dto.getVideoId() + " no encontrado")));
+        domain.setUser(userDao.findById(dto.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario con id " + dto.getUserId() + " no encontrado")));
+        domain.setVideo(videoDao.findByIdAndDeletedFalse(dto.getVideoId())
+                .orElseThrow(() -> new ResourceNotFoundException("Video con id " + dto.getVideoId() + " no encontrado")));
+
+
         domain.setViewDate(new Date());
         return domain;
     }
