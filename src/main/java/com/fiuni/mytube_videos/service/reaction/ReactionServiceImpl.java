@@ -137,15 +137,16 @@ public class ReactionServiceImpl extends BaseServiceImpl<ReactionDTO, ReactionDo
                 .orElseThrow(() -> new ResourceNotFoundException("Video con id " + videoId + " no encontrado"));
 
         // Obtener el resumen de reacciones del DAO
-        Map<String, Integer> reactionSummary = reactionDao.getReactionSummaryByVideoId(videoId);
+        Map<String, Long> reactionSummary = reactionDao.getReactionSummaryByVideoId(videoId);
 
         // Crear el DTO de resumen de reacciones
         ReactionSummaryDTO summary = new ReactionSummaryDTO();
-        summary.setLikes(reactionSummary.getOrDefault("likes", 0));
-        summary.setDislikes(reactionSummary.getOrDefault("dislikes", 0));
+        summary.setLikes(reactionSummary.getOrDefault("likes", 0L).intValue());   // Usar 0L para Long
+        summary.setDislikes(reactionSummary.getOrDefault("dislikes", 0L).intValue());  // Usar 0L para Long
 
         return summary;
     }
+
 
     // Eliminar una reacción y remover del caché
     @Override

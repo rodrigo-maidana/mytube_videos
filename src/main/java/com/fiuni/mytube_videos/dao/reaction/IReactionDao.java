@@ -15,5 +15,5 @@ public interface IReactionDao extends JpaRepository<ReactionDomain, Integer> {
     @Query("SELECT SUM(CASE WHEN r.reactionType = 'LIKE' THEN 1 ELSE 0 END) AS likes, " +
             "SUM(CASE WHEN r.reactionType = 'DISLIKE' THEN 1 ELSE 0 END) AS dislikes " +
             "FROM ReactionDomain r WHERE r.video.id = :videoId")
-    Map<String, Integer> getReactionSummaryByVideoId(@Param("videoId") Integer videoId);
+    Map<String, Long> getReactionSummaryByVideoId(@Param("videoId") Integer videoId);
 }

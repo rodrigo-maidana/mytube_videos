@@ -71,7 +71,7 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
 
         // Asignar visibilidad (si es inválida, lanzará la excepción automáticamente)
         try {
-            VideoVisibility.valueOf(dto.getVisibility());
+            domain.setVisibility(VideoVisibility.valueOf(dto.getVisibility()));
         } catch (IllegalArgumentException e) {
             throw new BadRequestException("La visibilidad del video es inválida");
         }
@@ -96,6 +96,7 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
 
         // Asignar fecha de subida
         domain.setUploadDate(new Date());
+        domain.setDeleted(false);
 
         // Guardar el video en la base de datos
         VideoDomain savedDomain = videoDao.save(domain);
@@ -128,6 +129,7 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
         // Mantener el usuario y el canal actuales
         updatedDomain.setUser(domain.getUser());
         updatedDomain.setChannel(domain.getChannel());
+        updatedDomain.setDeleted(false);
 
         // Guardar los cambios en la base de datos
         VideoDomain savedDomain = videoDao.save(updatedDomain);

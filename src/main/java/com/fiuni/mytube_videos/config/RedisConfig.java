@@ -27,9 +27,14 @@ public class RedisConfig {
                 .entryTtl(Duration.ofMinutes(10))
                 .disableCachingNullValues();
 
+        RedisCacheConfiguration commentCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofSeconds(60))
+                .disableCachingNullValues();
+
         // Mapa para definir las configuraciones de cada cache
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
         cacheConfigurations.put("mytube_videos", videoCacheConfig);
+        cacheConfigurations.put("mytube_comments", commentCacheConfig);
 
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(defaultCacheConfig)
