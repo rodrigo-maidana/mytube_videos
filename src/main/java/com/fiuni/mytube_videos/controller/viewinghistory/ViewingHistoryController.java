@@ -11,18 +11,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 @RestController
-@RequestMapping("/viewing-history")
+@RequestMapping("/viewingHistory")
 public class ViewingHistoryController {
 
     @Autowired
     private IViewingHistoryService viewingHistoryService;
 
-    // Guardar un nuevo historial de visualización
+    // Guardar un historial de visualización
     @PostMapping
     public ResponseEntity<ViewingHistoryDTO> createViewingHistory(@RequestBody ViewingHistoryDTO viewingHistoryDTO) {
-        ViewingHistoryDTO savedHistory = viewingHistoryService.save(viewingHistoryDTO);
+        ViewingHistoryDTO savedHistory = viewingHistoryService.create(viewingHistoryDTO);
         return new ResponseEntity<>(savedHistory, HttpStatus.CREATED);
     }
 
@@ -33,32 +32,24 @@ public class ViewingHistoryController {
         return new ResponseEntity<>(history, HttpStatus.OK);
     }
 
-    // Obtener historial de visualizaciones
+    // Obtener todos los historiales de visualización con paginación
     @GetMapping
-    public ResponseEntity<List<ViewingHistoryDTO>> getAllViewingHistory() {
-        ViewingHistoryResult result = viewingHistoryService.getAll();
+    public ResponseEntity<List<ViewingHistoryDTO>> getAllViewingHistory(Pageable pageable) {
+        ViewingHistoryResult result = viewingHistoryService.getAll(pageable);
         return new ResponseEntity<>(result.getViewingHistories(), HttpStatus.OK);
     }
 
     // Actualizar un historial de visualización
     @PutMapping("/{id}")
     public ResponseEntity<ViewingHistoryDTO> updateViewingHistory(@PathVariable Integer id, @RequestBody ViewingHistoryDTO viewingHistoryDTO) {
-        ViewingHistoryDTO existingHistory = viewingHistoryService.getById(id);
-        if (existingHistory == null) {
-            throw new ResourceNotFoundException("Historial con id " + id + " no encontrado");
-        }
         viewingHistoryDTO.set_id(id);
-        ViewingHistoryDTO updatedHistory = viewingHistoryService.save(viewingHistoryDTO);
+        ViewingHistoryDTO updatedHistory = viewingHistoryService.update(viewingHistoryDTO);
         return new ResponseEntity<>(updatedHistory, HttpStatus.OK);
     }
 
     // Eliminar un historial de visualización
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteViewingHistory(@PathVariable Integer id) {
-        ViewingHistoryDTO existingHistory = viewingHistoryService.getById(id);
-        if (existingHistory == null) {
-            throw new ResourceNotFoundException("Historial con id " + id + " no encontrado");
-        }
         viewingHistoryService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -69,5 +60,4 @@ public class ViewingHistoryController {
         ViewingHistoryResult result = viewingHistoryService.getByUser(pageable, userId);
         return new ResponseEntity<>(result.getViewingHistories(), HttpStatus.OK);
     }
-
 }

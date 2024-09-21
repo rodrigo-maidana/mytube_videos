@@ -3,7 +3,6 @@ package com.fiuni.mytube_videos.controller.reaction;
 import com.fiuni.mytube.dto.reaction.ReactionDTO;
 import com.fiuni.mytube.dto.reaction.ReactionResult;
 import com.fiuni.mytube_videos.dto.reaction.ReactionSummaryDTO;
-import com.fiuni.mytube_videos.dto.reaction.ReactionSummaryResult;
 import com.fiuni.mytube_videos.service.reaction.IReactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +22,7 @@ public class ReactionController {
     // Crear una nueva reacción
     @PostMapping
     public ResponseEntity<ReactionDTO> createReaction(@RequestBody ReactionDTO reactionDTO) {
-        ReactionDTO createdReaction = reactionService.save(reactionDTO);
+        ReactionDTO createdReaction = reactionService.create(reactionDTO);
         return new ResponseEntity<>(createdReaction, HttpStatus.CREATED);
     }
 
@@ -41,7 +40,7 @@ public class ReactionController {
         return new ResponseEntity<>(result.getReactions(), HttpStatus.OK);
     }
 
-    // Obtener reacciones por video con paginación
+    // Obtener el resumen de reacciones por video (likes/dislikes)
     @GetMapping("/video/{videoId}")
     public ResponseEntity<ReactionSummaryDTO> getReactionsByVideo(@PathVariable Integer videoId) {
         ReactionSummaryDTO dto = reactionService.getSummaryByVideoId(videoId);

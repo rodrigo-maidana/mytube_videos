@@ -21,6 +21,7 @@ import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -35,6 +36,7 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
 
     @Autowired
     private IChannelDao channelDao;
+
     @Autowired
     private RedisCacheManager cacheManager;
 
@@ -58,49 +60,79 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
 
     @Override
     protected VideoDomain convertDtoToDomain(VideoDTO dto) {
-        if(dto.get_id() == null) {
-            return convertDtoToDomainWithoutId(dto);
-        }
-        VideoDomain domain = videoDao.findById(dto.get_id()).orElse(null);
-
-        if(domain == null) {
-            domain = new VideoDomain();
-            domain.setUser(userDao.findById(dto.getUserId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Usuario con id " + dto.getUserId() + " no encontrado")));
-            domain.setChannel(channelDao.findById(dto.getChannelId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Canal con id " + dto.getChannelId() + " no encontrado")));
-
-        }else {
-            if(!domain.getUser().getId().equals(dto.getUserId())) {
-                throw new BadRequestException("No puedes cambiar el usuario de un video");
-            }
-
-            if(!domain.getChannel().getId().equals(dto.getChannelId())) {
-                throw new BadRequestException("No puedes cambiar el canal de un video");
-            }
-        }
-
+        VideoDomain domain = new VideoDomain();
+        domain.setId(dto.get_id());
         domain.setTitle(dto.getTitle());
         domain.setDescription(dto.getDescription());
         domain.setVideoUrl(dto.getVideoUrl());
         domain.setThumbnailUrl(dto.getThumbnailUrl());
         domain.setFormat(dto.getFormat());
         domain.setTags(dto.getTags());
-        domain.setUploadDate(dto.getUploadDate());
-        domain.setVisibility(VideoVisibility.valueOf(dto.getVisibility()));
+
+        // Asignar visibilidad (si es inválida, lanzará la excepción automáticamente)
+        try {
+            VideoVisibility.valueOf(dto.getVisibility());
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("La visibilidad del video es inválida");
+        }
+
         domain.setDuration(dto.getDuration());
-        domain.setDeleted(domain.getDeleted());
+
         return domain;
     }
 
-
-    // Guardar video
-    @Override
+    // Crear nuevo video
     @Transactional
-    @CachePut(value = "mytube_videos", key = "'video_' + #dto._id")
-    public VideoDTO save(VideoDTO dto) {
+    @Override
+    @CachePut(value = "mytube_videos", key = "'video_' + #result._id")
+    public VideoDTO create(VideoDTO dto) {
         VideoDomain domain = convertDtoToDomain(dto);
+
+        // Asignar usuario y canal
+        domain.setUser(userDao.findById(dto.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario con id " + dto.getUserId() + " no encontrado")));
+        domain.setChannel(channelDao.findById(dto.getChannelId())
+                .orElseThrow(() -> new ResourceNotFoundException("Canal con id " + dto.getChannelId() + " no encontrado")));
+
+        // Asignar fecha de subida
+        domain.setUploadDate(new Date());
+
+        // Guardar el video en la base de datos
         VideoDomain savedDomain = videoDao.save(domain);
+
+        // Retornar el DTO del video creado
+        return convertDomainToDto(savedDomain);
+    }
+
+    // Modificar video existente
+    @Transactional
+    @Override
+    @CachePut(value = "mytube_videos", key = "'video_' + #dto.get_id()")
+    public VideoDTO update(VideoDTO dto) {
+        // Buscar el video en la base de datos
+        VideoDomain domain = videoDao.findById(dto.get_id())
+                .orElseThrow(() -> new ResourceNotFoundException("Video con id " + dto.get_id() + " no encontrado"));
+
+        // Verificar que el usuario y el canal no cambien
+        if (!domain.getUser().getId().equals(dto.getUserId())) {
+            throw new BadRequestException("No puedes cambiar el usuario de un video");
+        }
+
+        if (!domain.getChannel().getId().equals(dto.getChannelId())) {
+            throw new BadRequestException("No puedes cambiar el canal de un video");
+        }
+
+        // Actualizar el video con los valores del DTO
+        VideoDomain updatedDomain = convertDtoToDomain(dto);
+
+        // Mantener el usuario y el canal actuales
+        updatedDomain.setUser(domain.getUser());
+        updatedDomain.setChannel(domain.getChannel());
+
+        // Guardar los cambios en la base de datos
+        VideoDomain savedDomain = videoDao.save(updatedDomain);
+
+        // Retornar el DTO del video actualizado
         return convertDomainToDto(savedDomain);
     }
 
@@ -112,11 +144,6 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
         VideoDomain domain = videoDao.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Video con id " + id + " no encontrado"));
         return convertDomainToDto(domain);
-    }
-
-    @Override
-    public VideoResult getAll() {
-        return null;
     }
 
     // Obtener todos los videos con paginación
@@ -140,7 +167,6 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
         return result;
     }
 
-
     // Soft delete de video
     @Override
     @Transactional
@@ -152,9 +178,9 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
         videoDao.save(domain);
     }
 
-    // Verificar que el video existe
-    public void checkVideoExists(Integer id) {
-        videoDao.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Video con id " + id + " no encontrado"));
+    // TODO Borrar este método
+    @Override
+    public VideoResult getAll() {
+        return null;
     }
 }

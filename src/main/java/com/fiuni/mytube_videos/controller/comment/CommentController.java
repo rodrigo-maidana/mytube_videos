@@ -4,6 +4,7 @@ import com.fiuni.mytube.dto.comment.CommentDTO;
 import com.fiuni.mytube.dto.comment.CommentResult;
 import com.fiuni.mytube_videos.service.comment.ICommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class CommentController {
     // Crear un nuevo comentario
     @PostMapping
     public ResponseEntity<CommentDTO> createComment(@RequestBody CommentDTO commentDTO) {
-        CommentDTO savedComment = commentService.save(commentDTO);
+        CommentDTO savedComment = commentService.create(commentDTO);
         return new ResponseEntity<>(savedComment, HttpStatus.CREATED);
     }
 
@@ -31,35 +32,33 @@ public class CommentController {
         return new ResponseEntity<>(comment, HttpStatus.OK);
     }
 
-    // Obtener todos los comentarios
+    // Obtener todos los comentarios con paginación
     @GetMapping
-    public ResponseEntity<List<CommentDTO>> getAllComments() {
-        CommentResult result = commentService.getAll();
+    public ResponseEntity<List<CommentDTO>> getAllComments(Pageable pageable) {
+        CommentResult result = commentService.getAll(pageable);
         return new ResponseEntity<>(result.getComments(), HttpStatus.OK);
+    }
+
+    // Obtener los comentarios hijos de un comentario padre
+    @GetMapping("/{parentId}/children")
+    public ResponseEntity<List<CommentDTO>> getChildrenComments(@PathVariable Integer parentId) {
+        List<CommentDTO> childComments = commentService.getChildrenComments(parentId);
+        return new ResponseEntity<>(childComments, HttpStatus.OK);
     }
 
     // Actualizar un comentario
     @PutMapping("/{id}")
     public ResponseEntity<CommentDTO> updateComment(@PathVariable Integer id, @RequestBody CommentDTO commentDTO) {
-        CommentDTO existingComment = commentService.getById(id);
-        if (existingComment == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        commentDTO.set_id(id);
-        CommentDTO updatedComment = commentService.save(commentDTO);
+        commentDTO.set_id(id);  // Asignar el ID para la actualización
+        CommentDTO updatedComment = commentService.update(commentDTO);
         return new ResponseEntity<>(updatedComment, HttpStatus.OK);
     }
 
-    // Eliminar un comentario
+    // Eliminar un comentario y sus hijos
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteComment(@PathVariable Integer id) {
-        CommentDTO existingComment = commentService.getById(id);
-        if (existingComment == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        // Implementa la eliminación lógica si es necesario (por ejemplo, marcando el comentario como eliminado)
-        //existingComment.setDeleted(true);
-        commentService.save(existingComment);
+        // Eliminar el comentario y todos sus hijos
+        commentService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

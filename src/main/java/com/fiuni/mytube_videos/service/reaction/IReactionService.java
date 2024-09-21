@@ -7,7 +7,7 @@ import com.fiuni.mytube_videos.service.base.IBaseService;
 import org.springframework.data.domain.Pageable;
 
 public interface IReactionService extends IBaseService<ReactionDTO, ReactionResult> {
-    ReactionResult getAll(Pageable pageable);
 
+    // Metodo para obtener todas las reacciones de un video
     ReactionSummaryDTO getSummaryByVideoId(Integer videoId);
 }

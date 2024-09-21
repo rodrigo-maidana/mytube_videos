@@ -21,7 +21,7 @@ public class VideoController {
     // Guardar un video
     @PostMapping
     public ResponseEntity<VideoDTO> createVideo(@RequestBody VideoDTO videoDTO) {
-        VideoDTO savedVideo = videoService.save(videoDTO);
+        VideoDTO savedVideo = videoService.create(videoDTO);
         return new ResponseEntity<>(savedVideo, HttpStatus.CREATED);
     }
 
@@ -42,16 +42,14 @@ public class VideoController {
     // Actualizar un video
     @PutMapping("/{id}")
     public ResponseEntity<VideoDTO> updateVideo(@PathVariable Integer id, @RequestBody VideoDTO videoDTO) {
-        videoService.checkVideoExists(id);
         videoDTO.set_id(id);
-        VideoDTO updatedVideo = videoService.save(videoDTO);
+        VideoDTO updatedVideo = videoService.update(videoDTO);
         return new ResponseEntity<>(updatedVideo, HttpStatus.OK);
     }
 
     // Eliminar un video
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteVideo(@PathVariable Integer id) {
-        videoService.checkVideoExists(id);
         videoService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
