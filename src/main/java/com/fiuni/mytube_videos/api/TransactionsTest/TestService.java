@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 @Service
 @Slf4j
@@ -14,6 +15,47 @@ public class TestService {
 
     @Autowired
     private IVideoDao videoDao;
+
+
+    // -------------------- ROLLBACK ------------------------
+
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void methodRollbackWithError(VideoDomain video) throws Exception {
+        log.info("Creando video con rollback forzado, parámetros: {}", video);
+        videoDao.save(video);
+        // Simulamos un error para forzar el rollback
+        if (true) {
+            log.error("Forzando rollback. Stacktrace del error:");
+            throw new Exception("Error simulado para rollback");
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void methodRollbackWithDelay(VideoDomain video) throws InterruptedException {
+        log.info("Creando video con rollback forzado después de un tiempo, parámetros: {}", video);
+        videoDao.save(video);
+        // Simulamos un retraso antes del rollback
+        Thread.sleep(5000);  // 5 segundos de retraso
+        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        log.info("Rollback realizado después del retraso.");
+    }
+
+
+    // -------------------- LECTURA ------------------------
+
+    @Transactional(readOnly = true)
+    public VideoDomain methodReadOnly(Integer videoId) {
+        log.info("Transacción de solo lectura");
+        return videoDao.findById(videoId).orElse(null); // Operación de lectura
+    }
+
+    // -------------------- ESCRITURA ------------------------
+
+    @Transactional
+    public VideoDomain methodWrite(VideoDomain video) {
+        log.info("Transacción de escritura");
+        return videoDao.save(video); // Operación de escritura
+    }
 
     // -------------------- REQUIRED ------------------------
 

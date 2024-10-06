@@ -1,6 +1,7 @@
 package com.fiuni.mytube_videos.api.TransactionsTest;
 
 import com.fiuni.mytube.domain.video.VideoDomain;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +13,49 @@ public class TestController {
 
     @Autowired
     private TestService testService;
+
+    // -------------------- ROLLBACK CON ERROR ------------------------
+
+    @PostMapping("/rollback-with-error")
+    public ResponseEntity<String> rollbackWithError(@RequestBody VideoDomain video) {
+        try {
+            testService.methodRollbackWithError(video);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Se forzó un rollback debido a un error: " + e.getMessage());
+        }
+        return ResponseEntity.ok("Video creado, pero se forzó un rollback.");
+    }
+
+// -------------------- ROLLBACK CON RETRASO ------------------------
+
+    @PostMapping("/rollback-with-delay")
+    public ResponseEntity<String> rollbackWithDelay(@RequestBody VideoDomain video) {
+        try {
+            testService.methodRollbackWithDelay(video);
+        } catch (InterruptedException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error durante el rollback diferido: " + e.getMessage());
+        }
+        return ResponseEntity.ok("Video creado, pero se forzó un rollback después de un retraso.");
+    }
+
+    // -------------------- LECTURA ------------------------
+
+    @GetMapping("/read/{id}")
+    public ResponseEntity<VideoDomain> readOnly(@PathVariable Integer id) {
+        VideoDomain video = testService.methodReadOnly(id);
+        return ResponseEntity.ok(video);
+    }
+
+    // -------------------- ESCRITURA ------------------------
+
+    @PostMapping("/write")
+    public ResponseEntity<VideoDomain> write(@RequestBody VideoDomain video) {
+        VideoDomain savedVideo = testService.methodWrite(video);
+        return ResponseEntity.ok(savedVideo);
+    }
+
 
     // -------------------- REQUIRED ------------------------
 
