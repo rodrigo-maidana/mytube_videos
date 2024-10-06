@@ -1,0 +1,135 @@
+package com.fiuni.mytube_videos.api.TransactionsTest;
+
+import com.fiuni.mytube.domain.video.VideoDomain;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+@RestController
+@RequestMapping("/api/test")
+public class TestController {
+
+    @Autowired
+    private TestService testService;
+
+    // -------------------- REQUIRED ------------------------
+
+    @PostMapping("/required-direct")
+    public ResponseEntity<String> requiredDirect(@RequestBody VideoDomain video) {
+        testService.methodRequiredDirect(video);
+        return ResponseEntity.ok("Llamada directa con propagación REQUIRED exitosa.");
+    }
+
+    @PostMapping("/required-indirect")
+    public ResponseEntity<String> requiredIndirect(@RequestBody VideoDomain video) {
+        testService.methodRequiredIndirect(video);
+        return ResponseEntity.ok("Llamada indirecta con transacción (REQUIRED) exitosa.");
+    }
+
+    @PostMapping("/required-indirect-no-tx")
+    public ResponseEntity<String> requiredIndirectNoTransaction(@RequestBody VideoDomain video) {
+        testService.methodRequiredIndirectNoTransaction(video);
+        return ResponseEntity.ok("Llamada indirecta sin transacción (REQUIRED) exitosa.");
+    }
+
+    // -------------------- SUPPORTS ------------------------
+
+    @PostMapping("/supports-direct")
+    public ResponseEntity<String> supportsDirect(@RequestBody VideoDomain video) {
+        testService.methodSupportsDirect(video);
+        return ResponseEntity.ok("Llamada directa con propagación SUPPORTS exitosa.");
+    }
+
+    @PostMapping("/supports-indirect")
+    public ResponseEntity<String> supportsIndirect(@RequestBody VideoDomain video) {
+        testService.methodSupportsIndirect(video);
+        return ResponseEntity.ok("Llamada indirecta con transacción (SUPPORTS) exitosa.");
+    }
+
+    @PostMapping("/supports-indirect-no-tx")
+    public ResponseEntity<String> supportsIndirectNoTransaction(@RequestBody VideoDomain video) {
+        testService.methodSupportsIndirectNoTransaction(video);
+        return ResponseEntity.ok("Llamada indirecta sin transacción (SUPPORTS) exitosa.");
+    }
+
+    // -------------------- NOT_SUPPORTED ------------------------
+
+    @PostMapping("/not-supported-direct")
+    public ResponseEntity<String> notSupportedDirect(@RequestBody VideoDomain video) {
+        testService.methodNotSupportsDirect(video);
+        return ResponseEntity.ok("Llamada directa con propagación NOT_SUPPORTED exitosa.");
+    }
+
+    @PostMapping("/not-supported-indirect")
+    public ResponseEntity<String> notSupportedIndirect(@RequestBody VideoDomain video) {
+        testService.methodNotSupportsIndirect(video);
+        return ResponseEntity.ok("Llamada indirecta con transacción (NOT_SUPPORTED) exitosa.");
+    }
+
+    @PostMapping("/not-supported-indirect-no-tx")
+    public ResponseEntity<String> notSupportedIndirectNoTransaction(@RequestBody VideoDomain video) {
+        testService.methodNotSupportsIndirectNoTransaction(video);
+        return ResponseEntity.ok("Llamada indirecta sin transacción (NOT_SUPPORTED) exitosa.");
+    }
+
+    // -------------------- REQUIRES_NEW ------------------------
+
+    @PostMapping("/requires-new-direct")
+    public ResponseEntity<String> requiresNewDirect(@RequestBody VideoDomain video) {
+        testService.methodRequiresNewDirect(video);
+        return ResponseEntity.ok("Llamada directa con propagación REQUIRES_NEW exitosa.");
+    }
+
+    @PostMapping("/requires-new-indirect")
+    public ResponseEntity<String> requiresNewIndirect(@RequestBody VideoDomain video) {
+        testService.methodRequiresNewIndirect(video);
+        return ResponseEntity.ok("Llamada indirecta con transacción (REQUIRES_NEW) exitosa.");
+    }
+
+    @PostMapping("/requires-new-indirect-no-tx")
+    public ResponseEntity<String> requiresNewIndirectNoTransaction(@RequestBody VideoDomain video) {
+        testService.methodRequiresNewIndirectNoTransaction(video);
+        return ResponseEntity.ok("Llamada indirecta sin transacción (REQUIRES_NEW) exitosa.");
+    }
+
+    // -------------------- NEVER ------------------------
+
+    @PostMapping("/never-direct")
+    public ResponseEntity<String> neverDirect(@RequestBody VideoDomain video) {
+        testService.methodNeverDirect(video);
+        return ResponseEntity.ok("Llamada directa con propagación NEVER exitosa.");
+    }
+
+    @PostMapping("/never-indirect")
+    public ResponseEntity<String> neverIndirect(@RequestBody VideoDomain video) {
+        testService.methodNeverIndirect(video);
+        return ResponseEntity.ok("Llamada indirecta con transacción (NEVER) exitosa.");
+    }
+
+    @PostMapping("/never-indirect-no-tx")
+    public ResponseEntity<String> neverIndirectNoTransaction(@RequestBody VideoDomain video) {
+        testService.methodNeverIndirectNoTransaction(video);
+        return ResponseEntity.ok("Llamada indirecta sin transacción (NEVER) exitosa.");
+    }
+
+    // -------------------- MANDATORY ------------------------
+
+    @PostMapping("/mandatory-direct")
+    public ResponseEntity<String> mandatoryDirect(@RequestBody VideoDomain video) {
+        testService.methodMandatoryDirect(video);
+        return ResponseEntity.ok("Llamada directa con propagación MANDATORY exitosa.");
+    }
+
+    @PostMapping("/mandatory-indirect")
+    public ResponseEntity<String> mandatoryIndirect(@RequestBody VideoDomain video) {
+        testService.methodMandatoryIndirect(video);
+        return ResponseEntity.ok("Llamada indirecta con transacción (MANDATORY) exitosa.");
+    }
+
+    @PostMapping("/mandatory-indirect-no-tx")
+    public ResponseEntity<String> mandatoryIndirectNoTransaction(@RequestBody VideoDomain video) {
+        testService.methodMandatoryIndirectNoTransaction(video);
+        return ResponseEntity.ok("Llamada indirecta sin transacción (MANDATORY) exitosa.");
+    }
+}
