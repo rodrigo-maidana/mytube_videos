@@ -1,7 +1,8 @@
 package com.fiuni.mytube_videos.api.TransactionsTest;
 
-import com.fiuni.mytube.domain.video.VideoDomain;
+import com.fiuni.mytube.dto.video.VideoDTO;
 import com.fiuni.mytube_videos.api.dao.video.IVideoDao;
+import com.fiuni.mytube_videos.api.service.video.IVideoService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -16,13 +17,15 @@ public class TestService {
     @Autowired
     private IVideoDao videoDao;
 
+    @Autowired
+    private IVideoService videoService;
 
     // -------------------- ROLLBACK ------------------------
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void methodRollbackWithError(VideoDomain video) throws Exception {
+    public void methodRollbackWithError(VideoDTO video) throws Exception {
         log.info("Creando video con rollback forzado, parámetros: {}", video);
-        videoDao.save(video);
+        VideoDTO newVideo = videoService.create(video);
         // Simulamos un error para forzar el rollback
         if (true) {
             log.error("Forzando rollback. Stacktrace del error:");
@@ -30,48 +33,47 @@ public class TestService {
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void methodRollbackWithDelay(VideoDomain video) throws InterruptedException {
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, timeout = 1)
+    public void methodRollbackWithDelay(VideoDTO video) throws InterruptedException {
         log.info("Creando video con rollback forzado después de un tiempo, parámetros: {}", video);
-        videoDao.save(video);
+        videoService.create(video); // Usar el servicio para crear el video
         // Simulamos un retraso antes del rollback
         Thread.sleep(5000);  // 5 segundos de retraso
         TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
         log.info("Rollback realizado después del retraso.");
     }
 
-
     // -------------------- LECTURA ------------------------
 
     @Transactional(readOnly = true)
-    public VideoDomain methodReadOnly(Integer videoId) {
+    public VideoDTO methodReadOnly(Integer videoId) {
         log.info("Transacción de solo lectura");
-        return videoDao.findById(videoId).orElse(null); // Operación de lectura
+        return videoService.getById(videoId); // Usar el servicio para obtener el video
     }
 
     // -------------------- ESCRITURA ------------------------
 
     @Transactional
-    public VideoDomain methodWrite(VideoDomain video) {
+    public VideoDTO methodWrite(VideoDTO video) {
         log.info("Transacción de escritura");
-        return videoDao.save(video); // Operación de escritura
+        return videoService.create(video); // Usar el servicio para crear el video
     }
 
     // -------------------- REQUIRED ------------------------
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public void methodRequiredDirect(VideoDomain video) {
+    public void methodRequiredDirect(VideoDTO video) {
         log.info("Llamada directa - Propagación REQUIRED.");
-        videoDao.save(video);
+        videoService.create(video); // Usar el servicio para crear el video
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public void methodRequiredIndirect(VideoDomain video) {
+    public void methodRequiredIndirect(VideoDTO video) {
         log.info("Llamada indirecta con transacción - Propagación REQUIRED.");
         methodRequiredDirect(video);
     }
 
-    public void methodRequiredIndirectNoTransaction(VideoDomain video) {
+    public void methodRequiredIndirectNoTransaction(VideoDTO video) {
         log.info("Llamada indirecta sin transacción - Propagación REQUIRED.");
         methodRequiredDirect(video);
     }
@@ -79,18 +81,18 @@ public class TestService {
     // -------------------- SUPPORTS ------------------------
 
     @Transactional(propagation = Propagation.SUPPORTS)
-    public void methodSupportsDirect(VideoDomain video) {
+    public void methodSupportsDirect(VideoDTO video) {
         log.info("Llamada directa - Propagación SUPPORTS.");
-        videoDao.save(video);
+        videoService.create(video); // Usar el servicio para crear el video
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
-    public void methodSupportsIndirect(VideoDomain video) {
+    public void methodSupportsIndirect(VideoDTO video) {
         log.info("Llamada indirecta con transacción - Propagación SUPPORTS.");
         methodSupportsDirect(video);
     }
 
-    public void methodSupportsIndirectNoTransaction(VideoDomain video) {
+    public void methodSupportsIndirectNoTransaction(VideoDTO video) {
         log.info("Llamada indirecta sin transacción - Propagación SUPPORTS.");
         methodSupportsDirect(video);
     }
@@ -98,18 +100,18 @@ public class TestService {
     // -------------------- NOT_SUPPORTED ------------------------
 
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void methodNotSupportsDirect(VideoDomain video) {
+    public void methodNotSupportsDirect(VideoDTO video) {
         log.info("Llamada directa - Propagación NOT_SUPPORTED.");
-        videoDao.save(video);
+        videoService.create(video); // Usar el servicio para crear el video
     }
 
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void methodNotSupportsIndirect(VideoDomain video) {
+    public void methodNotSupportsIndirect(VideoDTO video) {
         log.info("Llamada indirecta con transacción - Propagación NOT_SUPPORTED.");
         methodNotSupportsDirect(video);
     }
 
-    public void methodNotSupportsIndirectNoTransaction(VideoDomain video) {
+    public void methodNotSupportsIndirectNoTransaction(VideoDTO video) {
         log.info("Llamada indirecta sin transacción - Propagación NOT_SUPPORTED.");
         methodNotSupportsDirect(video);
     }
@@ -117,18 +119,18 @@ public class TestService {
     // -------------------- REQUIRES_NEW ------------------------
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void methodRequiresNewDirect(VideoDomain video) {
+    public void methodRequiresNewDirect(VideoDTO video) {
         log.info("Llamada directa - Propagación REQUIRES_NEW.");
-        videoDao.save(video);
+        videoService.create(video); // Usar el servicio para crear el video
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void methodRequiresNewIndirect(VideoDomain video) {
+    public void methodRequiresNewIndirect(VideoDTO video) {
         log.info("Llamada indirecta con transacción - Propagación REQUIRES_NEW.");
         methodRequiresNewDirect(video);
     }
 
-    public void methodRequiresNewIndirectNoTransaction(VideoDomain video) {
+    public void methodRequiresNewIndirectNoTransaction(VideoDTO video) {
         log.info("Llamada indirecta sin transacción - Propagación REQUIRES_NEW.");
         methodRequiresNewDirect(video);
     }
@@ -136,18 +138,18 @@ public class TestService {
     // -------------------- NEVER ------------------------
 
     @Transactional(propagation = Propagation.NEVER)
-    public void methodNeverDirect(VideoDomain video) {
+    public void methodNeverDirect(VideoDTO video) {
         log.info("Llamada directa - Propagación NEVER.");
-        videoDao.save(video);
+        videoService.create(video); // Usar el servicio para crear el video
     }
 
     @Transactional(propagation = Propagation.NEVER)
-    public void methodNeverIndirect(VideoDomain video) {
+    public void methodNeverIndirect(VideoDTO video) {
         log.info("Llamada indirecta con transacción - Propagación NEVER.");
         methodNeverDirect(video);
     }
 
-    public void methodNeverIndirectNoTransaction(VideoDomain video) {
+    public void methodNeverIndirectNoTransaction(VideoDTO video) {
         log.info("Llamada indirecta sin transacción - Propagación NEVER.");
         methodNeverDirect(video);
     }
@@ -155,18 +157,18 @@ public class TestService {
     // -------------------- MANDATORY ------------------------
 
     @Transactional(propagation = Propagation.MANDATORY)
-    public void methodMandatoryDirect(VideoDomain video) {
+    public void methodMandatoryDirect(VideoDTO video) {
         log.info("Llamada directa - Propagación MANDATORY.");
-        videoDao.save(video);
+        videoService.create(video); // Usar el servicio para crear el video
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
-    public void methodMandatoryIndirect(VideoDomain video) {
+    public void methodMandatoryIndirect(VideoDTO video) {
         log.info("Llamada indirecta con transacción - Propagación MANDATORY.");
         methodMandatoryDirect(video);
     }
 
-    public void methodMandatoryIndirectNoTransaction(VideoDomain video) {
+    public void methodMandatoryIndirectNoTransaction(VideoDTO video) {
         log.info("Llamada indirecta sin transacción - Propagación MANDATORY.");
         methodMandatoryDirect(video);
     }
