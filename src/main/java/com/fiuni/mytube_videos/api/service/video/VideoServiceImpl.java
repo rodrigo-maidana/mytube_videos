@@ -19,7 +19,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -82,7 +81,6 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
     }
 
     // Crear nuevo video
-    @Transactional
     @Override
     @CachePut(value = "mytube_videos", key = "'video_' + #result._id")
     public VideoDTO create(VideoDTO dto) {
@@ -106,7 +104,6 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
     }
 
     // Modificar video existente
-    @Transactional
     @Override
     @CachePut(value = "mytube_videos", key = "'video_' + #dto.get_id()")
     public VideoDTO update(VideoDTO dto) {
@@ -140,7 +137,6 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
 
     // Obtener video por ID
     @Override
-    @Transactional(readOnly = true)
     @Cacheable(value = "mytube_videos", key = "'video_' + #id")
     public VideoDTO getById(Integer id) {
         VideoDomain domain = videoDao.findByIdAndDeletedFalse(id)
@@ -150,7 +146,6 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
 
     // Obtener todos los videos con paginación
     @Override
-    @Transactional(readOnly = true)
     public VideoResult getAll(Pageable pageable) {
         Page<VideoDomain> page = videoDao.findAllByDeletedFalse(pageable);
         VideoResult result = new VideoResult();
@@ -171,7 +166,6 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
 
     // Soft delete de video
     @Override
-    @Transactional
     @CacheEvict(value = "mytube_videos", key = "'video_' + #id")
     public void delete(Integer id) {
         VideoDomain domain = videoDao.findByIdAndDeletedFalse(id)
