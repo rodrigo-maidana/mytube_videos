@@ -94,6 +94,9 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
         domain.setChannel(channelDao.findById(dto.getChannelId())
                 .orElseThrow(() -> new ResourceNotFoundException("Canal con id " + dto.getChannelId() + " no encontrado")));
 
+        //Asigmanos miniatura o la generamos si no existe
+        domain.setThumbnailUrl(generateThumbnail(dto));
+
         // Asignar fecha de subida
         domain.setUploadDate(new Date());
         domain.setDeleted(false);
@@ -179,4 +182,37 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
         domain.setDeleted(true);
         videoDao.save(domain);
     }
+
+    public String generateThumbnail(VideoDTO videoDto) {
+        // Verificar si el DTO no es nulo
+        if (videoDto == null) {
+            throw new BadRequestException("El VideoDTO es nulo");
+        }
+
+        // Si ya tiene un thumbnailUrl, devolver ese
+        if (videoDto.getThumbnailUrl() != null && !videoDto.getThumbnailUrl().isEmpty()) {
+            return videoDto.getThumbnailUrl();
+        }
+
+        // Si no tiene un thumbnail cargado, generar uno a partir del videoUrl
+        String videoUrl = videoDto.getVideoUrl();
+
+        // Verifica si la URL del video es válida y pertenece a YouTube
+        if (videoUrl == null || !videoUrl.contains("youtube.com/watch?v=")) {
+            throw new BadRequestException("La URL del video es inválida o no es un video de YouTube");
+        }
+
+        // Extraer la ID del video a partir de la URL
+        String videoId = videoUrl.substring(videoUrl.indexOf("v=") + 2);
+
+        // Crear la URL del thumbnail
+        String thumbnailUrl = "https://img.youtube.com/vi/" + videoId + "/maxresdefault.jpg";
+
+        // Actualizar el thumbnailUrl en el VideoDTO
+        videoDto.setThumbnailUrl(thumbnailUrl);
+
+        return thumbnailUrl;
+    }
+
+
 }
