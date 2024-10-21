@@ -129,10 +129,14 @@ public class VideoServiceImpl extends BaseServiceImpl<VideoDTO, VideoDomain, Vid
         // Actualizar el video con los valores del DTO
         VideoDomain updatedDomain = convertDtoToDomain(dto);
 
+        //Asigmanos miniatura o la generamos si no existe
+        updatedDomain.setThumbnailUrl(generateThumbnail(dto));
+
         // Mantener el usuario y el canal actuales
         updatedDomain.setUser(domain.getUser());
         updatedDomain.setChannel(domain.getChannel());
         updatedDomain.setDeleted(false);
+
 
         // Guardar los cambios en la base de datos
         VideoDomain savedDomain = videoDao.save(updatedDomain);
